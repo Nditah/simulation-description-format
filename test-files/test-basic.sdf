@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <world name="test_world">
+    <model name="test_model">
+      <link name="base_link">
+        <visual name="visual">
+          <geometry>
+            <box><size>1 1 1</size></box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>

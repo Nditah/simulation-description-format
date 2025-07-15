@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<sdf>
+  <world>
+    <model>
+      <joint type="invalid_type">
+        <parent>link1</parent>
+        <child>link2</child>
+      </joint>
+    </model>
+  </world>
+</sdf>
