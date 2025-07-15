@@ -1,9 +1,9 @@
 {
   "name": "simulation-description-format",
-  "displayName": "SDF Language Support",
-  "description": "Language support for SDF (Simulation Description Format) files, an XML format that describes objects and environments for robot simulators, visualization, and control.",
-  "version": "0.0.1",
-  "publisher": "Nditah",
+  "displayName": "SDFormat",
+  "description": "Professional language support for SDF (Simulation Description Format) files used in robotics simulation. Provides syntax highlighting, auto-completion, error detection, and documentation for Gazebo, ROS, and other robotics frameworks.",
+  "version": "1.0.0",
+  "publisher": "nditah",
   "author": {
     "name": "Anyeh Ndi-Tah",
     "email": "nditah@gmail.com"
@@ -11,7 +11,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Nditah/simulation-description-format"
+    "url": "https://github.com/Nditah/simulation-description-format.git"
   },
   "bugs": {
     "url": "https://github.com/Nditah/simulation-description-format/issues"
@@ -22,19 +22,28 @@
     "simulation",
     "robotics",
     "gazebo",
+    "ros",
     "xml",
-    "language-support"
+    "urdf",
+    "robot",
+    "physics",
+    "3d",
+    "modeling"
   ],
   "icon": "icon.png",
   "galleryBanner": {
-    "color": "#C80000",
+    "color": "#FF4500",
     "theme": "dark"
   },
+  "qna": "marketplace",
   "engines": {
     "vscode": "^1.74.0"
   },
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Snippets",
+    "Formatters",
+    "Other"
   ],
   "activationEvents": [
     "onLanguage:sdf"
@@ -44,13 +53,13 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "lint": "eslint src --ext ts", 
-    "pretest": "npm run compile",
+    "lint": "eslint src --ext ts",
+    "pretest": "npm run compile && npm run lint",
     "test": "node ./out/test/runTest.js",
     "test-schema": "npm run compile && npx mocha out/test/schema.test.js --reporter spec",
-    "test-quick": "npm run compile && echo 'Basic compilation test passed ✅'",
-     "package": "vsce package",
-    "publish": "vsce publish"
+    "package": "vsce package",
+    "publish": "vsce publish",
+    "deploy": "npm run pretest && npm run package && npm run publish"
   },
   "contributes": {
     "languages": [
@@ -84,7 +93,33 @@
         "scopeName": "source.sdf",
         "path": "./syntaxes/sdf.tmLanguage.json"
       }
-    ]
+    ],
+    "commands": [
+      {
+        "command": "sdf.format",
+        "title": "Format SDF Document",
+        "category": "SDF"
+      },
+      {
+        "command": "sdf.validate",
+        "title": "Validate SDF Document",
+        "category": "SDF"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceExtname == .sdf || resourceExtname == .world",
+          "command": "sdf.format",
+          "group": "1_modification"
+        },
+        {
+          "when": "resourceExtname == .sdf || resourceExtname == .world",
+          "command": "sdf.validate",
+          "group": "1_modification"
+        }
+      ]
+    }
   },
   "devDependencies": {
     "@types/glob": "^8.0.0",
