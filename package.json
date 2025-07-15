@@ -64,7 +64,18 @@
           ".sdf",
           ".world"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/sdf-light.svg",
+          "dark": "./icons/sdf-dark.svg"
+        }
+      }
+    ],
+    "iconThemes": [
+      {
+        "id": "sdf-icons",
+        "label": "SDF File Icons",
+        "path": "./icons/sdf-icon-theme.json"
       }
     ],
     "grammars": [

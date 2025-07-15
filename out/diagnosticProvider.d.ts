@@ -1,10 +1,13 @@
 import * as vscode from 'vscode';
 export declare class SDFDiagnosticProvider {
-    private sdfSchema;
+    private diagnosticCollection;
+    constructor();
     updateDiagnostics(document: vscode.TextDocument, collection: vscode.DiagnosticCollection): void;
-    private checkXmlSyntax;
-    private checkSdfStructure;
-    private checkRequiredAttributes;
-    private checkValidValues;
+    private validateXMLStructure;
+    private validateSDFSchema;
+    private validateRequiredAttributes;
+    private validateJointTypes;
+    private validateNestingRules;
+    dispose(): void;
 }
 //# sourceMappingURL=diagnosticProvider.d.ts.map

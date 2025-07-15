@@ -1,59 +1,77 @@
 {
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-	"name": "SDF",
+	"name": "SDF (Simulation Description Format)",
 	"scopeName": "source.sdf",
 	"fileTypes": ["sdf", "world"],
 	"patterns": [
 		{
-			"include": "#xml-declaration"
-		},
-		{
-			"include": "#comments"
-		},
-		{
 			"include": "#sdf-root"
-		},
-		{
-			"include": "#world-tags"
-		},
-		{
-			"include": "#model-tags"
-		},
-		{
-			"include": "#physics-tags"
-		},
-		{
-			"include": "#geometry-tags"
-		},
-		{
-			"include": "#material-tags"
-		},
-		{
-			"include": "#sensor-tags"
-		},
-		{
-			"include": "#plugin-tags"
-		},
-		{
-			"include": "#generic-tags"
-		},
-		{
-			"include": "#attributes"
-		},
-		{
-			"include": "#strings"
-		},
-		{
-			"include": "#numbers"
-		},
-		{
-			"include": "#vectors"
-		},
-		{
-			"include": "#file-paths"
 		}
 	],
 	"repository": {
+		"sdf-root": {
+			"patterns": [
+				{ "include": "#xml-declaration" },
+				{ "include": "#sdf-comments" },
+				{ "include": "#sdf-world-elements" },
+				{ "include": "#sdf-model-elements" },
+				{ "include": "#sdf-physics-elements" },
+				{ "include": "#sdf-geometry-elements" },
+				{ "include": "#sdf-sensor-elements" },
+				{ "include": "#sdf-attributes" },
+				{ "include": "#sdf-values" }
+			]
+		},
+		"sdf-world-elements": {
+			"match": "(</?)(sdf|world|include|physics|scene|state|population)(\\s|>)",
+			"captures": {
+				"1": { "name": "punctuation.definition.tag.sdf" },
+				"2": { "name": "entity.name.tag.world.sdf" },
+				"3": { "name": "punctuation.definition.tag.sdf" }
+			}
+		},
+		"sdf-model-elements": {
+			"match": "(</?)(model|link|joint|gripper|plugin)(\\s|>)",
+			"captures": {
+				"1": { "name": "punctuation.definition.tag.sdf" },
+				"2": { "name": "entity.name.tag.model.sdf" },
+				"3": { "name": "punctuation.definition.tag.sdf" }
+			}
+		},
+		"sdf-physics-elements": {
+			"match": "(</?)(inertial|mass|inertia|pose|gravity|kinematic)(\\s|>)",
+			"captures": {
+				"1": { "name": "punctuation.definition.tag.sdf" },
+				"2": { "name": "entity.name.tag.physics.sdf" },
+				"3": { "name": "punctuation.definition.tag.sdf" }
+			}
+		},
+		"sdf-geometry-elements": {
+			"match": "(</?)(visual|collision|geometry|box|sphere|cylinder|mesh|material)(\\s|>)",
+			"captures": {
+				"1": { "name": "punctuation.definition.tag.sdf" },
+				"2": { "name": "entity.name.tag.geometry.sdf" },
+				"3": { "name": "punctuation.definition.tag.sdf" }
+			}
+		},
+		"sdf-sensor-elements": {
+			"match": "(</?)(sensor|camera|ray|lidar|imu|gps|contact|force_torque)(\\s|>)",
+			"captures": {
+				"1": { "name": "punctuation.definition.tag.sdf" },
+				"2": { "name": "entity.name.tag.sensor.sdf" },
+				"3": { "name": "punctuation.definition.tag.sdf" }
+			}
+		},
+		"sdf-attributes": {
+			"match": "\\b(name|type|version|filename|uri|value)=",
+			"name": "entity.other.attribute-name.sdf"
+		},
+		"sdf-values": {
+			"match": "\"([^\"]*?)\"",
+			"captures": {
+				"1": { "name": "string.quoted.double.sdf" }
+			}
+		},
 		"xml-declaration": {
 			"patterns": [
 				{
@@ -92,36 +110,6 @@
 							"name": "punctuation.definition.comment.sdf"
 						}
 					}
-				}
-			]
-		},
-		"sdf-root": {
-			"patterns": [
-				{
-					"name": "meta.tag.sdf-root.sdf",
-					"begin": "(</?)(sdf)\\b",
-					"end": "(>)",
-					"beginCaptures": {
-						"1": {
-							"name": "punctuation.definition.tag.begin.sdf"
-						},
-						"2": {
-							"name": "entity.name.tag.root.sdf"
-						}
-					},
-					"endCaptures": {
-						"1": {
-							"name": "punctuation.definition.tag.end.sdf"
-						}
-					},
-					"patterns": [
-						{
-							"include": "#version-attribute"
-						},
-						{
-							"include": "#attributes"
-						}
-					]
 				}
 			]
 		},
