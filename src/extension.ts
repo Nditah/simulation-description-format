@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { SDFLanguageProvider } from './languageProvider';
 import { SDFDiagnosticProvider } from './diagnosticProvider';
 import { SDFCompletionProvider } from './completionProvider';
 import { SDFHoverProvider } from './hoverProvider';
@@ -7,8 +6,8 @@ import { SDFHoverProvider } from './hoverProvider';
 export function activate(context: vscode.ExtensionContext) {
     console.log('SDF Language Support extension is now active!');
 
-    // Use the centralized document selector
-    const sdfSelector = SDFLanguageProvider.getDocumentSelector();
+    // Register language providers
+    const sdfSelector: vscode.DocumentSelector = { scheme: 'file', language: 'sdf' };
     
     // Diagnostic provider for error detection
     const diagnosticProvider = new SDFDiagnosticProvider();
@@ -42,36 +41,25 @@ export function activate(context: vscode.ExtensionContext) {
     // Listen for document changes to update diagnostics
     context.subscriptions.push(
         vscode.workspace.onDidChangeTextDocument(event => {
-            if (SDFLanguageProvider.isSDFDocument(event.document)) {
+            if (event.document.languageId === 'sdf') {
                 diagnosticProvider.updateDiagnostics(event.document, diagnosticCollection);
             }
         })
     );
 
     // Initial diagnostic check for open documents
-    SDFLanguageProvider.getSDFDocuments().forEach(document => {
-        diagnosticProvider.updateDiagnostics(document, diagnosticCollection);
+    vscode.workspace.textDocuments.forEach(document => {
+        if (document.languageId === 'sdf') {
+            diagnosticProvider.updateDiagnostics(document, diagnosticCollection);
+        }
     });
-
-    // Register command for SDF validation
-    context.subscriptions.push(
-        vscode.commands.registerCommand('sdf.validateDocument', () => {
-            const activeEditor = vscode.window.activeTextEditor;
-            if (activeEditor && SDFLanguageProvider.isSDFDocument(activeEditor.document)) {
-                diagnosticProvider.updateDiagnostics(activeEditor.document, diagnosticCollection);
-                vscode.window.showInformationMessage('SDF document validated');
-            } else {
-                vscode.window.showWarningMessage('No active SDF document to validate');
-            }
-        })
-    );
 }
 
 class SDFFormattingProvider implements vscode.DocumentFormattingEditProvider {
     provideDocumentFormattingEdits(
         document: vscode.TextDocument,
         options: vscode.FormattingOptions,
-        token: vscode.CancellationToken
+        _token: vscode.CancellationToken
     ): vscode.TextEdit[] {
         const edits: vscode.TextEdit[] = [];
         const text = document.getText();
@@ -107,7 +95,7 @@ class SDFFormattingProvider implements vscode.DocumentFormattingEditProvider {
 
             formatted += indent.repeat(Math.max(0, indentLevel)) + trimmed + '\n';
 
-            if (SDFLanguageProvider.isOpeningTag(trimmed) && !trimmed.startsWith('<?')) {
+            if (trimmed.startsWith('<') && !trimmed.startsWith('</') && !trimmed.endsWith('/>') && !trimmed.startsWith('<?')) {
                 indentLevel++;
             }
         }

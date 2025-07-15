@@ -15,30 +15,22 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SDFLanguageProvider = void 0;
 const vscode = __importStar(require("vscode"));
+const sdfSchema_1 = require("./sdfSchema");
 class SDFLanguageProvider {
+    // VS Code specific methods
     static isSDFDocument(document) {
-        return document.languageId === this.SDF_LANGUAGE_ID ||
-            this.SDF_FILE_EXTENSIONS.some(ext => document.fileName.endsWith(ext));
+        return sdfSchema_1.SDFSchemaProvider.isSDFLanguage(document.languageId) ||
+            sdfSchema_1.SDFSchemaProvider.isSDFFile(document.fileName);
     }
     static getSDFDocuments() {
         return vscode.workspace.textDocuments.filter(doc => this.isSDFDocument(doc));
@@ -50,20 +42,6 @@ class SDFLanguageProvider {
             { scheme: 'file', pattern: '**/*.world' }
         ];
     }
-    // Utility methods for parsing SDF content
-    static extractTagName(tagString) {
-        const match = tagString.match(/<\/?(\w+)/);
-        return match ? match[1] : null;
-    }
-    static isOpeningTag(tagString) {
-        return tagString.startsWith('<') && !tagString.startsWith('</') && !tagString.endsWith('/>');
-    }
-    static isClosingTag(tagString) {
-        return tagString.startsWith('</');
-    }
-    static isSelfClosingTag(tagString) {
-        return tagString.endsWith('/>');
-    }
     // Get parent tag context for completion/validation
     static getParentTagContext(document, position) {
         const text = document.getText(new vscode.Range(0, 0, position.line, position.character));
@@ -72,71 +50,26 @@ class SDFLanguageProvider {
         for (const match of tagMatches) {
             const fullTag = match[0];
             const tagName = match[1];
-            if (this.isClosingTag(fullTag)) {
+            if (sdfSchema_1.SDFSchemaProvider.isClosingTag(fullTag)) {
                 stack.pop();
             }
-            else if (this.isOpeningTag(fullTag)) {
+            else if (sdfSchema_1.SDFSchemaProvider.isOpeningTag(fullTag)) {
                 stack.push(tagName);
             }
         }
         return stack.length > 0 ? stack[stack.length - 1] : null;
     }
-    // Type-safe method to check if a tag requires specific attributes
-    static getRequiredAttributes(tagName) {
-        const schema = this.SDF_SCHEMA.requiredAttributes;
-        return schema[tagName] || [];
-    }
-    // Type-safe method to check valid children for a tag
-    static getValidChildren(tagName) {
-        const schema = this.SDF_SCHEMA.validChildren;
-        return schema[tagName] || [];
-    }
-    // Helper method to get mutable copy if needed
-    static getRequiredAttributesCopy(tagName) {
-        const schema = this.SDF_SCHEMA.requiredAttributes;
-        const attrs = schema[tagName];
-        return attrs ? [...attrs] : [];
-    }
-    // Helper method to get mutable copy if needed
-    static getValidChildrenCopy(tagName) {
-        const schema = this.SDF_SCHEMA.validChildren;
-        const children = schema[tagName];
-        return children ? [...children] : [];
-    }
 }
 exports.SDFLanguageProvider = SDFLanguageProvider;
-// Base class for common language provider functionality
-SDFLanguageProvider.SDF_LANGUAGE_ID = 'sdf';
-SDFLanguageProvider.SDF_FILE_EXTENSIONS = ['.sdf', '.world'];
-// Common SDF schema definitions with proper types
-SDFLanguageProvider.SDF_SCHEMA = {
-    requiredAttributes: {
-        'sdf': ['version'],
-        'world': ['name'],
-        'model': ['name'],
-        'link': ['name'],
-        'joint': ['name', 'type'],
-        'sensor': ['name', 'type'],
-        'plugin': ['name', 'filename']
-    },
-    validChildren: {
-        'sdf': ['world', 'model'],
-        'world': ['include', 'model', 'light', 'physics', 'scene', 'state', 'population', 'plugin'],
-        'model': ['link', 'joint', 'plugin', 'gripper', 'pose', 'static', 'self_collide'],
-        'link': ['inertial', 'collision', 'visual', 'sensor', 'pose', 'kinematic', 'gravity', 'enable_wind'],
-        'visual': ['geometry', 'material', 'pose', 'cast_shadows', 'transparency'],
-        'collision': ['geometry', 'surface', 'pose'],
-        'geometry': ['box', 'sphere', 'cylinder', 'plane', 'mesh', 'polyline', 'capsule', 'ellipsoid'],
-        'inertial': ['mass', 'inertia', 'pose'],
-        'inertia': ['ixx', 'ixy', 'ixz', 'iyy', 'iyz', 'izz']
-    },
-    validJointTypes: ['revolute', 'prismatic', 'ball', 'universal', 'fixed', 'continuous'],
-    validSensorTypes: ['camera', 'ray', 'lidar', 'imu', 'gps', 'contact', 'force_torque', 'magnetometer', 'altimeter'],
-    sdfElements: [
-        'sdf', 'world', 'model', 'link', 'joint', 'visual', 'collision', 'inertial',
-        'geometry', 'box', 'sphere', 'cylinder', 'plane', 'mesh', 'material',
-        'pose', 'mass', 'inertia', 'sensor', 'camera', 'ray', 'plugin',
-        'include', 'uri', 'physics', 'light', 'scene', 'state'
-    ]
-};
+// Re-export the schema for backward compatibility
+SDFLanguageProvider.SDF_SCHEMA = sdfSchema_1.SDFSchemaProvider.SDF_SCHEMA;
+SDFLanguageProvider.SDF_LANGUAGE_ID = sdfSchema_1.SDFSchemaProvider.SDF_LANGUAGE_ID;
+SDFLanguageProvider.SDF_FILE_EXTENSIONS = sdfSchema_1.SDFSchemaProvider.SDF_FILE_EXTENSIONS;
+// Delegate to schema provider methods
+SDFLanguageProvider.extractTagName = sdfSchema_1.SDFSchemaProvider.extractTagName;
+SDFLanguageProvider.isOpeningTag = sdfSchema_1.SDFSchemaProvider.isOpeningTag;
+SDFLanguageProvider.isClosingTag = sdfSchema_1.SDFSchemaProvider.isClosingTag;
+SDFLanguageProvider.isSelfClosingTag = sdfSchema_1.SDFSchemaProvider.isSelfClosingTag;
+SDFLanguageProvider.getRequiredAttributes = sdfSchema_1.SDFSchemaProvider.getRequiredAttributes;
+SDFLanguageProvider.getValidChildren = sdfSchema_1.SDFSchemaProvider.getValidChildren;
 //# sourceMappingURL=languageProvider.js.map
