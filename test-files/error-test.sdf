@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<sdf version="2.0">
+  <world>
+    <model>
+      <link>
+        <visual>
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+          </geometry>
+        </visual>
+      </link>
+      <joint type="invalid_type">
+        <parent>link1</parent>
+        <child>link2</child>
+      </joint>
+    </model>
+  </world>
+</sdf>

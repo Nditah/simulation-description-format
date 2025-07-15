@@ -1,0 +1,36 @@
+{
+  "name": "SDF File Icons",
+  "iconDefinitions": {
+    "sdf-file": {
+      "iconPath": "./sdf-file-light.svg"
+    },
+    "sdf-file-dark": {
+      "iconPath": "./sdf-file-dark.svg"
+    },
+    "world-file": {
+      "iconPath": "./world-file-light.svg"
+    },
+    "world-file-dark": {
+      "iconPath": "./world-file-dark.svg"
+    }
+  },
+  "fileExtensions": {
+    "sdf": "sdf-file",
+    "world": "world-file"
+  },
+  "fileNames": {},
+  "folderNames": {},
+  "folderNamesExpanded": {},
+  "light": {
+    "fileExtensions": {
+      "sdf": "sdf-file",
+      "world": "world-file"
+    }
+  },
+  "highContrast": {
+    "fileExtensions": {
+      "sdf": "sdf-file-dark",
+      "world": "world-file-dark"
+    }
+  }
+}

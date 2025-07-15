@@ -1,171 +1,201 @@
 import * as vscode from 'vscode';
-import { SDFLanguageProvider } from './languageProvider';
+import { SDFSchemaProvider } from './sdfSchema';
 
 export class SDFDiagnosticProvider {
-    // Use the shared schema from SDFLanguageProvider
-    private sdfSchema = SDFLanguageProvider.SDF_SCHEMA;
+    private diagnosticCollection: vscode.DiagnosticCollection;
+
+    constructor() {
+        this.diagnosticCollection = vscode.languages.createDiagnosticCollection('sdf');
+    }
 
     updateDiagnostics(document: vscode.TextDocument, collection: vscode.DiagnosticCollection): void {
-        const diagnostics: vscode.Diagnostic[] = [];
-        
-        // Only process SDF documents
-        if (!SDFLanguageProvider.isSDFDocument(document)) {
+        if (!SDFSchemaProvider.isSDFFile(document.fileName) && !SDFSchemaProvider.isSDFLanguage(document.languageId)) {
             return;
         }
+
+        const diagnostics: vscode.Diagnostic[] = [];
+        const text = document.getText();
+        const lines = text.split('\n');
+
+        // Validate XML structure
+        this.validateXMLStructure(lines, diagnostics);
         
-        // Parse XML and check for errors
-        this.checkXmlSyntax(document, diagnostics);
-        this.checkSdfStructure(document, diagnostics);
-        this.checkRequiredAttributes(document, diagnostics);
-        this.checkValidValues(document, diagnostics);
+        // Validate SDF schema
+        this.validateSDFSchema(text, lines, diagnostics);
         
+        // Validate required attributes
+        this.validateRequiredAttributes(lines, diagnostics);
+        
+        // Validate joint types
+        this.validateJointTypes(lines, diagnostics);
+        
+        // Validate nesting rules
+        this.validateNestingRules(text, lines, diagnostics);
+
         collection.set(document.uri, diagnostics);
     }
 
-    private checkXmlSyntax(document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
-        const text = document.getText();
-        const lines = text.split('\n');
+    private validateXMLStructure(lines: string[], diagnostics: vscode.Diagnostic[]): void {
+        const tagStack: Array<{name: string, line: number}> = [];
         
-        // Check for unclosed tags
-        const tagStack: { name: string, line: number, col: number }[] = [];
-        
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            const tagMatches = line.matchAll(/<\/?(\w+)[^>]*>/g);
+        lines.forEach((line, lineIndex) => {
+            const trimmed = line.trim();
             
-            for (const match of tagMatches) {
+            // Find all tags in the line
+            const tagMatches = Array.from(line.matchAll(/<\/?(\w+)[^>]*\/?>/g));
+            
+            tagMatches.forEach((match) => {
                 const fullTag = match[0];
                 const tagName = match[1];
-                const col = match.index || 0;
+                const tagStart = match.index || 0;
                 
-                if (SDFLanguageProvider.isClosingTag(fullTag)) {
+                if (fullTag.endsWith('/>')) {
+                    // Self-closing tag - no validation needed
+                    return;
+                }
+                
+                if (fullTag.startsWith('</')) {
                     // Closing tag
                     const lastOpen = tagStack.pop();
                     if (!lastOpen) {
-                        diagnostics.push({
-                            range: new vscode.Range(i, col, i, col + fullTag.length),
-                            message: `Unexpected closing tag '</${tagName}>'`,
-                            severity: vscode.DiagnosticSeverity.Error,
-                            code: 'xml-unexpected-closing-tag'
-                        });
+                        diagnostics.push(new vscode.Diagnostic(
+                            new vscode.Range(lineIndex, tagStart, lineIndex, tagStart + fullTag.length),
+                            `Unexpected closing tag '${tagName}' - no matching opening tag found`,
+                            vscode.DiagnosticSeverity.Error
+                        ));
                     } else if (lastOpen.name !== tagName) {
-                        diagnostics.push({
-                            range: new vscode.Range(i, col, i, col + fullTag.length),
-                            message: `Mismatched closing tag. Expected '</${lastOpen.name}>' but found '</${tagName}>'`,
-                            severity: vscode.DiagnosticSeverity.Error,
-                            code: 'xml-mismatched-tag'
-                        });
+                        diagnostics.push(new vscode.Diagnostic(
+                            new vscode.Range(lineIndex, tagStart, lineIndex, tagStart + fullTag.length),
+                            `Mismatched closing tag '${tagName}' - expected '${lastOpen.name}' (opened on line ${lastOpen.line + 1})`,
+                            vscode.DiagnosticSeverity.Error
+                        ));
                     }
-                } else if (SDFLanguageProvider.isOpeningTag(fullTag) && !fullTag.startsWith('<?')) {
+                } else {
                     // Opening tag
-                    tagStack.push({ name: tagName, line: i, col });
+                    tagStack.push({name: tagName, line: lineIndex});
                 }
-            }
-        }
+            });
+        });
         
         // Check for unclosed tags
-        for (const unclosed of tagStack) {
-            diagnostics.push({
-                range: new vscode.Range(unclosed.line, unclosed.col, unclosed.line, unclosed.col + unclosed.name.length + 1),
-                message: `Unclosed tag '<${unclosed.name}>'`,
-                severity: vscode.DiagnosticSeverity.Error,
-                code: 'xml-unclosed-tag'
-            });
-        }
+        tagStack.forEach((unclosed) => {
+            diagnostics.push(new vscode.Diagnostic(
+                new vscode.Range(unclosed.line, 0, unclosed.line, lines[unclosed.line].length),
+                `Unclosed tag '${unclosed.name}' - missing closing tag`,
+                vscode.DiagnosticSeverity.Error
+            ));
+        });
     }
 
-    private checkSdfStructure(document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
-        const text = document.getText();
-        
-        // Check if document starts with <?xml declaration
-        if (!text.trim().startsWith('<?xml')) {
-            diagnostics.push({
-                range: new vscode.Range(0, 0, 0, 5),
-                message: 'SDF files should start with XML declaration',
-                severity: vscode.DiagnosticSeverity.Warning,
-                code: 'sdf-missing-xml-declaration'
-            });
+    private validateSDFSchema(text: string, lines: string[], diagnostics: vscode.Diagnostic[]): void {
+        // Check for SDF root element
+        if (!text.includes('<sdf')) {
+            diagnostics.push(new vscode.Diagnostic(
+                new vscode.Range(0, 0, 0, 0),
+                'SDF file must contain a root <sdf> element',
+                vscode.DiagnosticSeverity.Error
+            ));
         }
 
-        // Check for root SDF element
-        const sdfMatch = text.match(/<sdf[^>]*>/);
-        if (!sdfMatch) {
-            diagnostics.push({
-                range: new vscode.Range(0, 0, 0, 10),
-                message: 'SDF files must have a root <sdf> element',
-                severity: vscode.DiagnosticSeverity.Error,
-                code: 'sdf-missing-root'
-            });
-        }
-    }
-
-    private checkRequiredAttributes(document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
-        const text = document.getText();
-        const lines = text.split('\n');
-        
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            const tagMatches = line.matchAll(/<(\w+)([^>]*)>/g);
-            
-            for (const match of tagMatches) {
-                const tagName = match[1];
-                const attributes = match[2];
-                const col = match.index || 0;
-                
-                // Use the helper method to get required attributes
-                const requiredAttrs = SDFLanguageProvider.getRequiredAttributes(tagName);
-                if (requiredAttrs.length > 0) {
-                    for (const requiredAttr of requiredAttrs) {
-                        if (!attributes.includes(`${requiredAttr}=`)) {
-                            diagnostics.push({
-                                range: new vscode.Range(i, col, i, col + match[0].length),
-                                message: `Missing required attribute '${requiredAttr}' for element '${tagName}'`,
-                                severity: vscode.DiagnosticSeverity.Error,
-                                code: 'sdf-missing-required-attribute'
-                            });
-                        }
-                    }
-                }
+        // Validate SDF version
+        const sdfVersionMatch = text.match(/<sdf\s+version="([^"]+)"/);
+        if (sdfVersionMatch) {
+            const version = sdfVersionMatch[1];
+            const validVersions = ['1.0', '1.2', '1.3', '1.4', '1.5', '1.6', '1.7', '1.8', '1.9'];
+            if (!validVersions.includes(version)) {
+                const lineIndex = lines.findIndex(line => line.includes(sdfVersionMatch[0]));
+                diagnostics.push(new vscode.Diagnostic(
+                    new vscode.Range(lineIndex, 0, lineIndex, lines[lineIndex].length),
+                    `Invalid SDF version '${version}'. Valid versions: ${validVersions.join(', ')}`,
+                    vscode.DiagnosticSeverity.Warning
+                ));
             }
         }
     }
 
-    private checkValidValues(document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
-        const text = document.getText();
-        const lines = text.split('\n');
+    private validateRequiredAttributes(lines: string[], diagnostics: vscode.Diagnostic[]): void {
+        lines.forEach((line, lineIndex) => {
+            // Check for elements that require specific attributes
+            const jointMatch = line.match(/<joint\s+([^>]*)>/);
+            if (jointMatch) {
+                const attributes = jointMatch[1];
+                if (!attributes.includes('name=')) {
+                    diagnostics.push(new vscode.Diagnostic(
+                        new vscode.Range(lineIndex, 0, lineIndex, line.length),
+                        'Joint element requires a "name" attribute',
+                        vscode.DiagnosticSeverity.Error
+                    ));
+                }
+                if (!attributes.includes('type=')) {
+                    diagnostics.push(new vscode.Diagnostic(
+                        new vscode.Range(lineIndex, 0, lineIndex, line.length),
+                        'Joint element requires a "type" attribute',
+                        vscode.DiagnosticSeverity.Error
+                    ));
+                }
+            }
+
+            const modelMatch = line.match(/<model\s+([^>]*)>/);
+            if (modelMatch && !modelMatch[1].includes('name=')) {
+                diagnostics.push(new vscode.Diagnostic(
+                    new vscode.Range(lineIndex, 0, lineIndex, line.length),
+                    'Model element requires a "name" attribute',
+                    vscode.DiagnosticSeverity.Error
+                ));
+            }
+
+            const linkMatch = line.match(/<link\s+([^>]*)>/);
+            if (linkMatch && !linkMatch[1].includes('name=')) {
+                diagnostics.push(new vscode.Diagnostic(
+                    new vscode.Range(lineIndex, 0, lineIndex, line.length),
+                    'Link element requires a "name" attribute',
+                    vscode.DiagnosticSeverity.Error
+                ));
+            }
+        });
+    }
+
+    private validateJointTypes(lines: string[], diagnostics: vscode.Diagnostic[]): void {
+        const validJointTypes = SDFSchemaProvider.SDF_SCHEMA.validJointTypes;
         
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            
-            // Check joint types
-            const jointTypeMatch = line.match(/<joint[^>]*type=["']([^"']+)["']/);
-            if (jointTypeMatch) {
+        lines.forEach((line, lineIndex) => {
+            const jointTypeMatch = line.match(/type="([^"]+)"/);
+            if (jointTypeMatch && line.includes('<joint')) {
                 const jointType = jointTypeMatch[1];
-                if (!this.sdfSchema.validJointTypes.includes(jointType as any)) {
-                    const col = line.indexOf(jointType);
-                    diagnostics.push({
-                        range: new vscode.Range(i, col, i, col + jointType.length),
-                        message: `Invalid joint type '${jointType}'. Valid types: ${this.sdfSchema.validJointTypes.join(', ')}`,
-                        severity: vscode.DiagnosticSeverity.Error,
-                        code: 'sdf-invalid-joint-type'
-                    });
+                if (!validJointTypes.includes(jointType as any)) {
+                    const typeStart = line.indexOf(jointTypeMatch[0]);
+                    diagnostics.push(new vscode.Diagnostic(
+                        new vscode.Range(lineIndex, typeStart, lineIndex, typeStart + jointTypeMatch[0].length),
+                        `Invalid joint type '${jointType}'. Valid types: ${validJointTypes.join(', ')}`,
+                        vscode.DiagnosticSeverity.Error
+                    ));
                 }
             }
+        });
+    }
+
+    private validateNestingRules(text: string, lines: string[], diagnostics: vscode.Diagnostic[]): void {
+        // Validate that certain elements appear in correct contexts
+        const worldPattern = /<world[^>]*>/;
+        const modelPattern = /<model[^>]*>/;
+        
+        if (worldPattern.test(text) && modelPattern.test(text)) {
+            // Check if models are properly nested within world or at root level
+            const worldIndex = text.search(worldPattern);
+            const modelIndex = text.search(modelPattern);
             
-            // Check sensor types
-            const sensorTypeMatch = line.match(/<sensor[^>]*type=["']([^"']+)["']/);
-            if (sensorTypeMatch) {
-                const sensorType = sensorTypeMatch[1];
-                if (!this.sdfSchema.validSensorTypes.includes(sensorType as any)) {
-                    const col = line.indexOf(sensorType);
-                    diagnostics.push({
-                        range: new vscode.Range(i, col, i, col + sensorType.length),
-                        message: `Invalid sensor type '${sensorType}'. Valid types: ${this.sdfSchema.validSensorTypes.join(', ')}`,
-                        severity: vscode.DiagnosticSeverity.Error,
-                        code: 'sdf-invalid-sensor-type'
-                    });
-                }
+            if (worldIndex > -1 && modelIndex > -1 && modelIndex < worldIndex) {
+                const lineIndex = lines.findIndex(line => line.includes('<model'));
+                diagnostics.push(new vscode.Diagnostic(
+                    new vscode.Range(lineIndex, 0, lineIndex, lines[lineIndex].length),
+                    'Model should be defined within a world element or at root level after world',
+                    vscode.DiagnosticSeverity.Warning
+                ));
             }
         }
+    }
+
+    dispose(): void {
+        this.diagnosticCollection.dispose();
     }
 }

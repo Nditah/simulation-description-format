@@ -1,0 +1,32 @@
+<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="darkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B4513;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#FF4500;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#FF1493;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B008B;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background rounded rectangle -->
+  <rect x="1" y="1" width="14" height="14" rx="2" ry="2" fill="url(#darkGradient)" filter="url(#glow)"/>
+  
+  <!-- SDF Text with glow -->
+  <text x="8" y="6.5" font-family="Arial, sans-serif" font-size="4" font-weight="bold" 
+        text-anchor="middle" fill="white" stroke="#00BFFF" stroke-width="0.1">SDF</text>
+  
+  <!-- Small subtitle -->
+  <text x="8" y="11.5" font-family="Arial, sans-serif" font-size="2" 
+        text-anchor="middle" fill="#F0F8FF" opacity="0.9">SIM</text>
+  
+  <!-- Robot/gear icon hint -->
+  <circle cx="12" cy="4" r="1.5" fill="none" stroke="#00BFFF" stroke-width="0.5" opacity="0.8"/>
+  <circle cx="12" cy="4" r="0.5" fill="#00BFFF" opacity="0.8"/>
+</svg>

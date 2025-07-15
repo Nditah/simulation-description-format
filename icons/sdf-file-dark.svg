@@ -1,0 +1,37 @@
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fileGradientDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B4513;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#FF4500;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#FF1493;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B008B;stop-opacity:1" />
+    </linearGradient>
+    <filter id="fileGlow">
+      <feGaussianBlur stdDeviation="0.5" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- File shape -->
+  <path d="M4 2 L16 2 L20 6 L20 22 L4 22 Z" fill="url(#fileGradientDark)" stroke="#666" stroke-width="0.5" filter="url(#fileGlow)"/>
+  
+  <!-- File corner fold -->
+  <path d="M16 2 L16 6 L20 6" fill="none" stroke="#666" stroke-width="0.5"/>
+  
+  <!-- SDF Text with glow -->
+  <text x="12" y="10" font-family="Arial, sans-serif" font-size="5" font-weight="bold" 
+        text-anchor="middle" fill="white" stroke="#00BFFF" stroke-width="0.1">SDF</text>
+  
+  <!-- Format text -->
+  <text x="12" y="16" font-family="Arial, sans-serif" font-size="3" 
+        text-anchor="middle" fill="#F0F8FF" opacity="0.9">FORMAT</text>
+  
+  <!-- Robot icon -->
+  <rect x="7" y="18" width="2" height="2" fill="#00BFFF" opacity="0.8" rx="0.5"/>
+  <rect x="10" y="18" width="2" height="2" fill="#00BFFF" opacity="0.8" rx="0.5"/>
+  <rect x="13" y="18" width="2" height="2" fill="#00BFFF" opacity="0.8" rx="0.5"/>
+  <rect x="15" y="18" width="2" height="2" fill="#00BFFF" opacity="0.8" rx="0.5"/>
+</svg>
