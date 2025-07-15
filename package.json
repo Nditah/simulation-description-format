@@ -1,0 +1,85 @@
+{
+  "name": "simulation-description-format",
+  "displayName": "SDF Language Support",
+  "description": "Language support for SDF (Simulation Description Format) files, an XML format that describes objects and environments for robot simulators, visualization, and control.",
+  "version": "0.0.1",
+  "publisher": "your-publisher-name",
+  "author": {
+    "name": "Your Name",
+    "email": "your.email@example.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/simulation-description-format"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/simulation-description-format/issues"
+  },
+  "homepage": "https://github.com/your-username/simulation-description-format#readme",
+  "keywords": [
+    "sdf",
+    "simulation",
+    "robotics",
+    "gazebo",
+    "xml",
+    "language-support"
+  ],
+  "engines": {
+    "vscode": "^1.102.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:sdf"
+  ],
+  "main": "./out/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "sdf",
+        "aliases": [
+          "SDF",
+          "Simulation Description Format"
+        ],
+        "extensions": [
+          ".sdf",
+          ".world"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/sdf-light.svg",
+          "dark": "./icons/sdf-dark.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "sdf",
+        "scopeName": "source.sdf",
+        "path": "./syntaxes/sdf.tmLanguage.json"
+      }
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.14",
+    "@types/vscode": "^1.102.0",
+    "@vscode/test-electron": "^2.3.9",
+    "@vscode/vsce": "^2.24.0",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "typescript": "^5.8.3"
+  }
+}

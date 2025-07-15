@@ -1,0 +1,148 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "SDF",
+	"scopeName": "source.sdf",
+	"fileTypes": ["sdf", "world"],
+	"patterns": [
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#tags"
+		},
+		{
+			"include": "#attributes"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#numbers"
+		}
+	],
+	"repository": {
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.block.xml.sdf",
+					"begin": "<!--",
+					"end": "-->",
+					"captures": {
+						"0": {
+							"name": "punctuation.definition.comment.sdf"
+						}
+					}
+				}
+			]
+		},
+		"tags": {
+			"patterns": [
+				{
+					"name": "meta.tag.sdf",
+					"begin": "(</?)(sdf|world|model|link|joint|sensor|plugin|collision|visual|inertial|physics|light|actor)",
+					"end": "(>)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.begin.sdf"
+						},
+						"2": {
+							"name": "entity.name.tag.sdf"
+						}
+					},
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.end.sdf"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#attributes"
+						}
+					]
+				},
+				{
+					"name": "meta.tag.other.sdf",
+					"begin": "(</?)(\\w+)",
+					"end": "(>)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.begin.sdf"
+						},
+						"2": {
+							"name": "entity.name.tag.other.sdf"
+						}
+					},
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.end.sdf"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#attributes"
+						}
+					]
+				}
+			]
+		},
+		"attributes": {
+			"patterns": [
+				{
+					"name": "meta.attribute.sdf",
+					"match": "(\\w+)(=)([\"'])(.*?)([\"'])",
+					"captures": {
+						"1": {
+							"name": "entity.other.attribute-name.sdf"
+						},
+						"2": {
+							"name": "punctuation.separator.key-value.sdf"
+						},
+						"3": {
+							"name": "punctuation.definition.string.begin.sdf"
+						},
+						"4": {
+							"name": "string.quoted.attribute.sdf"
+						},
+						"5": {
+							"name": "punctuation.definition.string.end.sdf"
+						}
+					}
+				}
+			]
+		},
+		"strings": {
+			"patterns": [
+				{
+					"name": "string.quoted.double.sdf",
+					"begin": "\"",
+					"end": "\"",
+					"patterns": [
+						{
+							"name": "constant.character.escape.sdf",
+							"match": "\\\\."
+						}
+					]
+				},
+				{
+					"name": "string.quoted.single.sdf",
+					"begin": "'",
+					"end": "'",
+					"patterns": [
+						{
+							"name": "constant.character.escape.sdf",
+							"match": "\\\\."
+						}
+					]
+				}
+			]
+		},
+		"numbers": {
+			"patterns": [
+				{
+					"name": "constant.numeric.sdf",
+					"match": "\\b\\d+(\\.\\d+)?([eE][+-]?\\d+)?\\b"
+				}
+			]
+		}
+	}
+}
