@@ -5,10 +5,37 @@
 	"fileTypes": ["sdf", "world"],
 	"patterns": [
 		{
+			"include": "#xml-declaration"
+		},
+		{
 			"include": "#comments"
 		},
 		{
-			"include": "#tags"
+			"include": "#sdf-root"
+		},
+		{
+			"include": "#world-tags"
+		},
+		{
+			"include": "#model-tags"
+		},
+		{
+			"include": "#physics-tags"
+		},
+		{
+			"include": "#geometry-tags"
+		},
+		{
+			"include": "#material-tags"
+		},
+		{
+			"include": "#sensor-tags"
+		},
+		{
+			"include": "#plugin-tags"
+		},
+		{
+			"include": "#generic-tags"
 		},
 		{
 			"include": "#attributes"
@@ -18,9 +45,42 @@
 		},
 		{
 			"include": "#numbers"
+		},
+		{
+			"include": "#vectors"
+		},
+		{
+			"include": "#file-paths"
 		}
 	],
 	"repository": {
+		"xml-declaration": {
+			"patterns": [
+				{
+					"name": "meta.tag.preprocessor.xml.sdf",
+					"begin": "(<\\?)(xml)",
+					"end": "(\\?>)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.begin.xml.sdf"
+						},
+						"2": {
+							"name": "entity.name.tag.xml.sdf"
+						}
+					},
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.end.sdf"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#attributes"
+						}
+					]
+				}
+			]
+		},
 		"comments": {
 			"patterns": [
 				{
@@ -35,18 +95,48 @@
 				}
 			]
 		},
-		"tags": {
+		"sdf-root": {
 			"patterns": [
 				{
-					"name": "meta.tag.sdf",
-					"begin": "(</?)(sdf|world|model|link|joint|sensor|plugin|collision|visual|inertial|physics|light|actor)",
+					"name": "meta.tag.sdf-root.sdf",
+					"begin": "(</?)(sdf)\\b",
 					"end": "(>)",
 					"beginCaptures": {
 						"1": {
 							"name": "punctuation.definition.tag.begin.sdf"
 						},
 						"2": {
-							"name": "entity.name.tag.sdf"
+							"name": "entity.name.tag.root.sdf"
+						}
+					},
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.end.sdf"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#version-attribute"
+						},
+						{
+							"include": "#attributes"
+						}
+					]
+				}
+			]
+		},
+		"world-tags": {
+			"patterns": [
+				{
+					"name": "meta.tag.world.sdf",
+					"begin": "(</?)(world|include|physics|scene|light|state|population)\\b",
+					"end": "(>)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.begin.sdf"
+						},
+						"2": {
+							"name": "entity.name.tag.world.sdf"
 						}
 					},
 					"endCaptures": {
@@ -59,9 +149,175 @@
 							"include": "#attributes"
 						}
 					]
-				},
+				}
+			]
+		},
+		"model-tags": {
+			"patterns": [
 				{
-					"name": "meta.tag.other.sdf",
+					"name": "meta.tag.model.sdf",
+					"begin": "(</?)(model|link|joint|gripper|actor)\\b",
+					"end": "(>)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.begin.sdf"
+						},
+						"2": {
+							"name": "entity.name.tag.model.sdf"
+						}
+					},
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.end.sdf"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#attributes"
+						}
+					]
+				}
+			]
+		},
+		"physics-tags": {
+			"patterns": [
+				{
+					"name": "meta.tag.physics.sdf",
+					"begin": "(</?)(inertial|mass|inertia|pose|velocity|acceleration|force|torque|collision|contact|friction|bounce|surface)\\b",
+					"end": "(>)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.begin.sdf"
+						},
+						"2": {
+							"name": "entity.name.tag.physics.sdf"
+						}
+					},
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.end.sdf"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#attributes"
+						}
+					]
+				}
+			]
+		},
+		"geometry-tags": {
+			"patterns": [
+				{
+					"name": "meta.tag.geometry.sdf",
+					"begin": "(</?)(visual|geometry|box|sphere|cylinder|plane|mesh|polyline|capsule|ellipsoid)\\b",
+					"end": "(>)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.begin.sdf"
+						},
+						"2": {
+							"name": "entity.name.tag.geometry.sdf"
+						}
+					},
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.end.sdf"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#attributes"
+						}
+					]
+				}
+			]
+		},
+		"material-tags": {
+			"patterns": [
+				{
+					"name": "meta.tag.material.sdf",
+					"begin": "(</?)(material|script|ambient|diffuse|specular|emissive|lighting|shader|normal_map|render_order)\\b",
+					"end": "(>)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.begin.sdf"
+						},
+						"2": {
+							"name": "entity.name.tag.material.sdf"
+						}
+					},
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.end.sdf"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#attributes"
+						}
+					]
+				}
+			]
+		},
+		"sensor-tags": {
+			"patterns": [
+				{
+					"name": "meta.tag.sensor.sdf",
+					"begin": "(</?)(sensor|camera|ray|lidar|imu|gps|contact|force_torque|magnetometer|altimeter)\\b",
+					"end": "(>)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.begin.sdf"
+						},
+						"2": {
+							"name": "entity.name.tag.sensor.sdf"
+						}
+					},
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.end.sdf"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#attributes"
+						}
+					]
+				}
+			]
+		},
+		"plugin-tags": {
+			"patterns": [
+				{
+					"name": "meta.tag.plugin.sdf",
+					"begin": "(</?)(plugin)\\b",
+					"end": "(>)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.begin.sdf"
+						},
+						"2": {
+							"name": "entity.name.tag.plugin.sdf"
+						}
+					},
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.tag.end.sdf"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#attributes"
+						}
+					]
+				}
+			]
+		},
+		"generic-tags": {
+			"patterns": [
+				{
+					"name": "meta.tag.generic.sdf",
 					"begin": "(</?)(\\w+)",
 					"end": "(>)",
 					"beginCaptures": {
@@ -85,11 +341,78 @@
 				}
 			]
 		},
+		"version-attribute": {
+			"patterns": [
+				{
+					"name": "meta.attribute.version.sdf",
+					"match": "\\b(version)(=)([\"'])(\\d+\\.\\d+)([\"'])",
+					"captures": {
+						"1": {
+							"name": "entity.other.attribute-name.version.sdf"
+						},
+						"2": {
+							"name": "punctuation.separator.key-value.sdf"
+						},
+						"3": {
+							"name": "punctuation.definition.string.begin.sdf"
+						},
+						"4": {
+							"name": "constant.numeric.version.sdf"
+						},
+						"5": {
+							"name": "punctuation.definition.string.end.sdf"
+						}
+					}
+				}
+			]
+		},
 		"attributes": {
 			"patterns": [
 				{
-					"name": "meta.attribute.sdf",
-					"match": "(\\w+)(=)([\"'])(.*?)([\"'])",
+					"name": "meta.attribute.name.sdf",
+					"match": "\\b(name)(=)([\"'])([^\"']+)([\"'])",
+					"captures": {
+						"1": {
+							"name": "entity.other.attribute-name.name.sdf"
+						},
+						"2": {
+							"name": "punctuation.separator.key-value.sdf"
+						},
+						"3": {
+							"name": "punctuation.definition.string.begin.sdf"
+						},
+						"4": {
+							"name": "string.quoted.name.sdf"
+						},
+						"5": {
+							"name": "punctuation.definition.string.end.sdf"
+						}
+					}
+				},
+				{
+					"name": "meta.attribute.type.sdf",
+					"match": "\\b(type)(=)([\"'])([^\"']+)([\"'])",
+					"captures": {
+						"1": {
+							"name": "entity.other.attribute-name.type.sdf"
+						},
+						"2": {
+							"name": "punctuation.separator.key-value.sdf"
+						},
+						"3": {
+							"name": "punctuation.definition.string.begin.sdf"
+						},
+						"4": {
+							"name": "support.type.sdf"
+						},
+						"5": {
+							"name": "punctuation.definition.string.end.sdf"
+						}
+					}
+				},
+				{
+					"name": "meta.attribute.generic.sdf",
+					"match": "(\\w+)(=)([\"'])([^\"']*)([\"'])",
 					"captures": {
 						"1": {
 							"name": "entity.other.attribute-name.sdf"
@@ -105,6 +428,35 @@
 						},
 						"5": {
 							"name": "punctuation.definition.string.end.sdf"
+						}
+					}
+				}
+			]
+		},
+		"vectors": {
+			"patterns": [
+				{
+					"name": "constant.numeric.vector.sdf",
+					"match": "\\b(-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\s+(-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\s+(-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)(?:\\s+(-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\s+(-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\s+(-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?))?\\b"
+				}
+			]
+		},
+		"numbers": {
+			"patterns": [
+				{
+					"name": "constant.numeric.sdf",
+					"match": "\\b-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+				}
+			]
+		},
+		"file-paths": {
+			"patterns": [
+				{
+					"name": "string.quoted.uri.sdf",
+					"match": "\\b(model://|file://|package://)[^\\s<>\"']+",
+					"captures": {
+						"1": {
+							"name": "support.type.uri-scheme.sdf"
 						}
 					}
 				}
@@ -133,14 +485,6 @@
 							"match": "\\\\."
 						}
 					]
-				}
-			]
-		},
-		"numbers": {
-			"patterns": [
-				{
-					"name": "constant.numeric.sdf",
-					"match": "\\b\\d+(\\.\\d+)?([eE][+-]?\\d+)?\\b"
 				}
 			]
 		}

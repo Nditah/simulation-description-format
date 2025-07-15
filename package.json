@@ -3,10 +3,10 @@
   "displayName": "SDF Language Support",
   "description": "Language support for SDF (Simulation Description Format) files, an XML format that describes objects and environments for robot simulators, visualization, and control.",
   "version": "0.0.1",
-  "publisher": "your-publisher-name",
+  "publisher": "VS Code Marketplace",
   "author": {
-    "name": "Your Name",
-    "email": "your.email@example.com"
+    "name": "Anyeh Ndi-Tah",
+    "email": "nditah@gmail.com"
   },
   "license": "MIT",
   "repository": {
